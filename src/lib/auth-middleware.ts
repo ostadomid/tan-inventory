@@ -1,20 +1,24 @@
 // app/lib/auth-middleware.ts
-import { createMiddleware } from '@tanstack/react-start';
-import {getRequestHeader, setResponseHeader} from '@tanstack/react-start/server'
-import { createPocketBase } from './pocket';
+import { createMiddleware } from '@tanstack/react-start'
+
+// import { createPocketBase } from './pocket';
+import PocketBase from 'pocketbase'
 
 export const authMiddleware = createMiddleware().server(async ({ next }) => {
+  const { getRequestHeader, setResponseHeader } =
+    await import('@tanstack/react-start/server')
+  // const cookieHeader = getRequestHeader('cookie') || '';
 
-  const cookieHeader = getRequestHeader('cookie') || '';
-
-  const pb = createPocketBase(cookieHeader);
+  // const pb = createPocketBase(cookieHeader);
+  const pb = new PocketBase('http://127.0.0.1:8090')
+  await pb.collection('users').authWithPassword('kami@io.net', '14251425')
 
   // Auto-refresh token if valid/expired
   if (pb.authStore.isValid) {
     try {
-      await pb.collection('users').authRefresh();
+      await pb.collection('users').authRefresh()
     } catch {
-      pb.authStore.clear();
+      pb.authStore.clear()
     }
   }
 
@@ -23,14 +27,14 @@ export const authMiddleware = createMiddleware().server(async ({ next }) => {
     httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'Lax',
-  });
+  })
 
-  setResponseHeader('Set-Cookie', cookie);
+  setResponseHeader('Set-Cookie', cookie)
 
   return next({
     context: {
       pb,
       user: pb.authStore.record,
     },
-  });
-});
+  })
+})

@@ -1,20 +1,28 @@
-import { pb } from '#/lib/pocket'
-import { createFileRoute } from '@tanstack/react-router'
+import { fetch_session } from '#/lib/actions'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
   component: Home,
-  async beforeLoad(ctx) {
-    const _cards = await pb.collection('cards').getList()
+  async loader() {
+    const { user, cards } = await fetch_session()
+    if (!user) {
+      throw redirect({ to: '/login' })
+    }
+    return { cards }
   },
 })
 
 function Home() {
+  const { cards } = Route.useLoaderData()
+
   return (
     <div className="p-8">
-      <h1 className="text-4xl font-bold">Welcome to TanStack Start</h1>
-      <p className="mt-4 text-lg">
-        Edit <code>src/routes/index.tsx</code> to get started.
-      </p>
+      <h1 className="text-4xl font-bold">Cards</h1>
+      <ul>
+        {cards.map((c) => (
+          <li key={c.id}>{c['card_id']}</li>
+        ))}
+      </ul>
     </div>
   )
 }
