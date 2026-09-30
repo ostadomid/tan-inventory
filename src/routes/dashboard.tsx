@@ -15,7 +15,7 @@ function RouteComponent() {
   return (
     <div className="max-w-lg mx-auto flex flex-col gap-2">
       <ul className="w-full flex ">
-        <li>Welcome {user.id}</li>
+        <li>Welcome {user.name || user.email}</li>
         <li className="flex-1">
           <Link to="/">Home</Link>
         </li>
