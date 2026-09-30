@@ -43,3 +43,5 @@ export const login = createServerFn({ method: 'POST' })
       return { ok: false }
     }
   })
+
+  export const addNewOrder = createServerFn({method:"POST"}).
