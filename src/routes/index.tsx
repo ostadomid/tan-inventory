@@ -15,14 +15,13 @@ function Home() {
   // const { cards } = Route.useLoaderData()
 
   return (
-    <div className="p-8">
-      <Link to="/dashboard">Dashboard</Link>
-      {/* <h1 className="text-4xl font-bold">Cards</h1>
-      <ul>
-        {cards.map((c) => (
-          <li key={c.id}>{c['card_id']}</li>
-        ))}
-      </ul> */}
+    <div className="w-full h-full grid place-items-center">
+      <Link
+        to="/dashboard"
+        className="border border-green-400 text-white rounded-xl px-4 py-2 bg-green-200 hover:bg-green-600/75 cursor-pointer delay-75 transition-all"
+      >
+        Start Here...
+      </Link>
     </div>
   )
 }
