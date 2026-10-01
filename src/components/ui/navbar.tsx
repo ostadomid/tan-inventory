@@ -106,7 +106,7 @@ export function Header({
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="relative flex items-center gap-2 rounded-full p-1 pl-2 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
+                  className="relative flex items-center gap-2 rounded-full p-1 ps-2 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <span className="hidden text-sm font-medium lg:inline-block">
                     {user.name}
@@ -136,15 +136,15 @@ export function Header({
 
                 <DropdownMenuGroup>
                   <DropdownMenuItem className="cursor-pointer">
-                    <User className="mr-2 h-4 w-4" />
+                    <User className="me-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer">
-                    <CreditCard className="mr-2 h-4 w-4" />
+                    <CreditCard className="me-2 h-4 w-4" />
                     <span>Billing & Subscription</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer">
-                    <Settings className="mr-2 h-4 w-4" />
+                    <Settings className="me-2 h-4 w-4" />
                     <span>Settings</span>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
@@ -152,7 +152,7 @@ export function Header({
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem className="cursor-pointer">
-                  <LifeBuoy className="mr-2 h-4 w-4" />
+                  <LifeBuoy className="me-2 h-4 w-4" />
                   <span>Support</span>
                 </DropdownMenuItem>
 
@@ -162,7 +162,7 @@ export function Header({
                   onClick={onLogout}
                   className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
                 >
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <LogOut className="me-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>

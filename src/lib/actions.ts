@@ -51,6 +51,6 @@ export const get_card_ids = createServerFn()
       .collection('cards')
       .getFullList({ sort: 'card_id', fields: 'card_id' })
     const cardIds = [...new Set(result.map((r) => r.card_id))]
-    // console.log(cardIds)
+    console.log(cardIds)
     return cardIds
   })

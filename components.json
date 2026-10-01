@@ -18,7 +18,7 @@
     "hooks": "#/hooks"
   },
   "iconLibrary": "lucide",
-  "rtl": false,
+  "rtl": true,
   "menuColor": "default",
   "menuAccent": "subtle",
   "registries": {}

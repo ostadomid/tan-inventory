@@ -2,7 +2,6 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Calendar } from 'react-multi-date-picker'
 import persian from 'react-date-object/calendars/persian'
 import persian_fa from 'react-date-object/locales/persian_fa'
-import { createServerFn } from '@tanstack/react-start'
 import {
   Card,
   CardContent,
@@ -15,13 +14,11 @@ import { useForm } from '@tanstack/react-form'
 import { addOrderValidator } from '#/lib/validators'
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
-import { pocketbaseProvider } from '#/lib/middlewares'
 import { get_card_ids } from '#/lib/actions'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -32,10 +29,11 @@ import {
   ComboboxItem,
   ComboboxList,
 } from '#/components/ui/combobox'
+import { DirectionProvider } from '#/components/ui/direction'
 
 export const Route = createFileRoute('/dashboard/inventory')({
   async loader({ context }) {
-    await context.queryClient.query({
+    await context.queryClient.query<string[]>({
       queryKey: ['cardIds'],
       queryFn: get_card_ids,
     })
@@ -53,9 +51,8 @@ function RouteComponent() {
     validators: {
       onChange: addOrderValidator,
     },
-    onSubmit({ value: { cardId, count, orderedAt } }) {},
   })
-  const { data: cardIds } = useQuery({
+  const { data: cardIds } = useQuery<string[]>({
     queryKey: ['cardIds'],
     queryFn: get_card_ids,
   })
@@ -67,6 +64,7 @@ function RouteComponent() {
         </CardHeader>
         <CardContent>
           <form
+            id="add-to-inventory-form"
             onSubmit={(e) => {
               e.preventDefault()
               form.handleSubmit()
@@ -80,20 +78,24 @@ function RouteComponent() {
                   return (
                     <Field data-invalid={isInvalid}>
                       <FieldLabel htmlFor={field.name}>کد کارت</FieldLabel>
+
                       <Combobox
-                        style={{ direction: 'ltr' }}
                         items={cardIds}
-                        onValueChange={(e) => {
-                          console.log({ e })
+                        value={field.state.value}
+                        onValueChange={(cardId: string | null) => {
+                          field.handleChange(cardId || '')
                         }}
                       >
-                        <ComboboxInput placeholder="انتخاب کنید" />
-                        <ComboboxContent>
+                        <ComboboxInput
+                          placeholder="انتخاب کنید"
+                          style={{ textAlign: 'center' }}
+                        />
+                        <ComboboxContent dir="ltr">
                           <ComboboxEmpty>
                             کارتی برای انتخاب وجود ندارد
                           </ComboboxEmpty>
                           <ComboboxList>
-                            {(item) => (
+                            {(item: string) => (
                               <ComboboxItem key={item} value={item}>
                                 {item}
                               </ComboboxItem>
@@ -101,6 +103,7 @@ function RouteComponent() {
                           </ComboboxList>
                         </ComboboxContent>
                       </Combobox>
+
                       {isInvalid && (
                         <FieldError errors={field.state.meta.errors} />
                       )}
@@ -116,8 +119,8 @@ function RouteComponent() {
                     <Field data-invalid={isInvalid}>
                       <FieldLabel htmlFor={field.name}>تعداد</FieldLabel>
                       <Input
-                        className="text-center"
-                        style={{ direction: 'ltr' }}
+                        dir="ltr"
+                        className="text-center!"
                         id={field.name}
                         name={field.name}
                         inputMode="numeric"
@@ -143,26 +146,48 @@ function RouteComponent() {
                   )
                 }}
               </form.Field>
-              <form.Subscribe selector={(s) => s.isFormValid}>
-                {(isValid) => (
-                  <Button
-                    variant="default"
-                    type="submit"
-                    className="col-start-2"
-                    disabled={!isValid}
-                  >
-                    ثبت
-                  </Button>
-                )}
-              </form.Subscribe>
+              <form.Field name="orderedAt">
+                {(field) => {
+                  return (
+                    <Field>
+                      <FieldLabel>زمان سفارش</FieldLabel>
+                      <Calendar
+                        calendar={persian}
+                        locale={persian_fa}
+                        value={field.state.value}
+                        onChange={(e) => {
+                          field.handleChange(e?.format('YYYY-MM-DD') || '')
+                        }}
+                      />
+                    </Field>
+                  )
+                }}
+              </form.Field>
             </FieldGroup>
           </form>
         </CardContent>
         <CardFooter className="justify-end">
-          <Button variant={'secondary'}>ثبت انبار</Button>
+          <form.Subscribe selector={(s) => s.isFormValid}>
+            {(isValid) => (
+              <Button
+                variant="default"
+                form="add-to-inventory-form"
+                className="px-8"
+                type="submit"
+                disabled={!isValid}
+              >
+                ثبت انبار
+              </Button>
+            )}
+          </form.Subscribe>
         </CardFooter>
       </Card>
-      <Calendar calendar={persian} locale={persian_fa} />
+      <form.Subscribe
+        selector={(s) => ({ cardId: s.values.cardId, count: s.values.count })}
+      >
+        {(value) => <pre dir="ltr">{JSON.stringify(value, null, 2)}</pre>}
+      </form.Subscribe>
+      <pre dir="ltr">{JSON.stringify(form.state.values, null, 2)}</pre>
     </div>
   )
 }
