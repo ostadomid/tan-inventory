@@ -33,7 +33,7 @@ function RouteComponent() {
               className="px-4 py-1 bg-green-100/50 hover:bg-green-100/75 rounded-full flex gap-2 "
             >
               <ClipboardList className="" />
-              <span>Inventory</span>
+              <span>انــــبار</span>
             </Link>
           </li>
           <li>
@@ -42,7 +42,7 @@ function RouteComponent() {
               className="px-4 py-1 bg-green-100/50 hover:bg-green-100/75 rounded-full flex gap-2 "
             >
               <ScrollText />
-              <span>Logs</span>
+              <span>سابقه</span>
             </Link>
           </li>
         </ul>

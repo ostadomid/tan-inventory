@@ -43,11 +43,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" dir="rtl">
       <head>
         <HeadContent />
       </head>
-      <body className="h-full">
+      <body>
         {children}
         <TanStackDevtools
           config={{
