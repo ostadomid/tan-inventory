@@ -12,6 +12,7 @@ import appCss from '../styles.css?url'
 
 import type { QueryClient } from '@tanstack/react-query'
 import { DirectionProvider } from '#/components/ui/direction'
+import { Toaster } from '#/components/ui/toast'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -49,7 +50,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <DirectionProvider dir="rtl">{children}</DirectionProvider>
+        <DirectionProvider direction="rtl">{children}</DirectionProvider>
         <TanStackDevtools
           config={{
             position: 'bottom-right',
@@ -63,6 +64,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           ]}
         />
         <Scripts />
+        <Toaster />
       </body>
     </html>
   )

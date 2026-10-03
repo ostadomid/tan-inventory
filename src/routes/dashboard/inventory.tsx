@@ -2,6 +2,17 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Calendar } from 'react-multi-date-picker'
 import persian from 'react-date-object/calendars/persian'
 import persian_fa from 'react-date-object/locales/persian_fa'
+import { format } from 'date-fns-jalali'
+import {
+  useTable,
+  tableFeatures,
+  createPaginatedRowModel,
+  createSortedRowModel,
+  rowSortingFeature,
+  rowPaginationFeature,
+} from '@tanstack/react-table'
+import type { ColumnDef } from '@tanstack/react-table'
+
 import {
   Card,
   CardContent,
@@ -14,22 +25,31 @@ import { useForm } from '@tanstack/react-form'
 import { addOrderValidator } from '#/lib/validators'
 import {
   Field,
+  FieldContent,
   FieldError,
   FieldGroup,
   FieldLabel,
+  FieldTitle,
 } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
-import { get_card_ids } from '#/lib/actions'
+import type { StockSummary } from '#/lib/actions'
+import { add_new_order, get_card_ids, get_stock } from '#/lib/actions'
 import { useQuery } from '@tanstack/react-query'
+
+import { cn, convert_to_gregorian_sting } from '#/lib/utils'
+import { toast } from '#/components/ui/toast'
+import { RadioGroup, RadioGroupItem } from '#/components/ui/radio-group'
+import ComboboxCreatable from '#/components/shadcn-space/combobox/combobox-10'
 import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from '#/components/ui/combobox'
-import { DirectionProvider } from '#/components/ui/direction'
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '#/components/ui/table'
+import { SortIcon } from '#/components/sort-icon'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs'
 
 export const Route = createFileRoute('/dashboard/inventory')({
   async loader({ context }) {
@@ -42,152 +62,299 @@ export const Route = createFileRoute('/dashboard/inventory')({
 })
 
 function RouteComponent() {
-  const form = useForm({
-    defaultValues: {
-      cardId: '',
-      count: 0,
-      orderedAt: new Date().toISOString().substring(0, 10),
-    },
-    validators: {
-      onChange: addOrderValidator,
-    },
-  })
   const { data: cardIds } = useQuery<string[]>({
     queryKey: ['cardIds'],
     queryFn: get_card_ids,
   })
+  const { data: stockSummary, refetch: refetchSummary } = useQuery<
+    StockSummary[]
+  >({
+    queryKey: ['summary'],
+    queryFn: get_stock,
+  })
+  const features = tableFeatures({
+    rowSortingFeature,
+    rowPaginationFeature,
+    paginatedRowModel: createPaginatedRowModel(),
+    sortedRowModel: createSortedRowModel(),
+  })
+  const columns: Array<ColumnDef<typeof features, StockSummary>> = [
+    {
+      accessorKey: 'card_id',
+      header: () => <div className="text-start">کارت</div>,
+    },
+    {
+      accessorKey: 'sum',
+      header: () => <div className="text-start">موجودی</div>,
+      cell(props) {
+        const count = props.getValue() as number
+
+        return <span>{count}</span>
+      },
+    },
+  ]
+  const table = useTable({
+    features,
+    columns,
+    data: stockSummary || [],
+  })
+  const form = useForm({
+    defaultValues: {
+      cardId: '',
+      count: 0,
+      type: 'out',
+      orderedAt: format(new Date(), 'yyyy-MM-dd'),
+    },
+    validators: {
+      onChange: addOrderValidator,
+    },
+    async onSubmit({ value: { cardId, count, orderedAt, type } }) {
+      const result = await add_new_order({
+        data: {
+          cardId,
+          count,
+          type: type as any,
+          orderedAt: convert_to_gregorian_sting(orderedAt),
+        },
+      })
+      if (result.ok) {
+        form.reset()
+        toast.add({
+          title: `سفارش جدید ثبت شد`,
+          type: 'success',
+        })
+        refetchSummary({ cancelRefetch: true })
+        table.resetSorting()
+      } else {
+        toast.add({
+          title: result.msg,
+          type: 'error',
+        })
+      }
+    },
+  })
+
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>ثبت سفارش جدید</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form
-            id="add-to-inventory-form"
-            onSubmit={(e) => {
-              e.preventDefault()
-              form.handleSubmit()
-            }}
-          >
-            <FieldGroup className="grid sm:grid-cols-2 gap-x-2 gap-y-4">
-              <form.Field name="cardId">
-                {(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>کد کارت</FieldLabel>
-
-                      <Combobox
-                        items={cardIds}
-                        value={field.state.value}
-                        onValueChange={(cardId: string | null) => {
-                          field.handleChange(cardId || '')
-                        }}
-                      >
-                        <ComboboxInput
-                          placeholder="انتخاب کنید"
-                          style={{ textAlign: 'center' }}
-                        />
-                        <ComboboxContent dir="ltr">
-                          <ComboboxEmpty>
-                            کارتی برای انتخاب وجود ندارد
-                          </ComboboxEmpty>
-                          <ComboboxList>
-                            {(item: string) => (
-                              <ComboboxItem key={item} value={item}>
-                                {item}
-                              </ComboboxItem>
-                            )}
-                          </ComboboxList>
-                        </ComboboxContent>
-                      </Combobox>
-
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  )
+      <Tabs defaultValue="one">
+        <TabsList className="bg-gray-300/45">
+          <TabsTrigger value="one">سفارش جدید</TabsTrigger>
+          <TabsTrigger value="two">موجودی انبار</TabsTrigger>
+        </TabsList>
+        <TabsContent value="one">
+          <Card>
+            <CardHeader>
+              <CardTitle>ثبت سفارش جدید</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form
+                id="add-to-inventory-form"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  form.handleSubmit()
                 }}
-              </form.Field>
-              <form.Field name="count">
-                {(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>تعداد</FieldLabel>
-                      <Input
-                        dir="ltr"
-                        className="text-center!"
-                        id={field.name}
-                        name={field.name}
-                        inputMode="numeric"
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onFocus={(e) => {
-                          e.target.select()
-                        }}
-                        onChange={(e) => {
-                          if (isNaN(parseInt(e.target.value))) {
-                            field.handleChange(0)
-                          } else {
-                            field.handleChange(parseInt(e.target.value))
-                          }
-                        }}
-                        aria-invalid={isInvalid}
-                        autoComplete="off"
-                      />
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  )
-                }}
-              </form.Field>
-              <form.Field name="orderedAt">
-                {(field) => {
-                  return (
-                    <Field>
-                      <FieldLabel>زمان سفارش</FieldLabel>
-                      <Calendar
-                        calendar={persian}
-                        locale={persian_fa}
-                        value={field.state.value}
-                        onChange={(e) => {
-                          field.handleChange(e?.format('YYYY-MM-DD') || '')
-                        }}
-                      />
-                    </Field>
-                  )
-                }}
-              </form.Field>
-            </FieldGroup>
-          </form>
-        </CardContent>
-        <CardFooter className="justify-end">
-          <form.Subscribe selector={(s) => s.isFormValid}>
-            {(isValid) => (
-              <Button
-                variant="default"
-                form="add-to-inventory-form"
-                className="px-8"
-                type="submit"
-                disabled={!isValid}
               >
-                ثبت انبار
-              </Button>
-            )}
-          </form.Subscribe>
-        </CardFooter>
-      </Card>
-      <form.Subscribe
-        selector={(s) => ({ cardId: s.values.cardId, count: s.values.count })}
-      >
-        {(value) => <pre dir="ltr">{JSON.stringify(value, null, 2)}</pre>}
-      </form.Subscribe>
-      <pre dir="ltr">{JSON.stringify(form.state.values, null, 2)}</pre>
+                <FieldGroup className="grid sm:grid-cols-2 gap-x-2 gap-y-4">
+                  <form.Field name="cardId">
+                    {(field) => {
+                      const isInvalid =
+                        field.state.meta.isTouched && !field.state.meta.isValid
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldLabel htmlFor={field.name}>کد کارت</FieldLabel>
+
+                          <ComboboxCreatable
+                            initialItems={cardIds || []}
+                            value={field.state.value}
+                            triggerLabel="انتخاب کنید"
+                            placeHolder="جستجو یا ایجاد کارت"
+                            onValueChange={(cardId: string | null) => {
+                              field.handleChange(cardId || '')
+                            }}
+                          />
+
+                          {isInvalid && (
+                            <FieldError errors={field.state.meta.errors} />
+                          )}
+                        </Field>
+                      )
+                    }}
+                  </form.Field>
+                  <form.Field name="count">
+                    {(field) => {
+                      const isInvalid =
+                        field.state.meta.isTouched && !field.state.meta.isValid
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldLabel htmlFor={field.name}>تعداد</FieldLabel>
+                          <Input
+                            dir="ltr"
+                            className="text-center!"
+                            id={field.name}
+                            name={field.name}
+                            inputMode="numeric"
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onFocus={(e) => {
+                              e.target.select()
+                            }}
+                            onChange={(e) => {
+                              if (isNaN(parseInt(e.target.value))) {
+                                field.handleChange(0)
+                              } else {
+                                field.handleChange(parseInt(e.target.value))
+                              }
+                            }}
+                            aria-invalid={isInvalid}
+                            autoComplete="off"
+                          />
+                          {isInvalid && (
+                            <FieldError errors={field.state.meta.errors} />
+                          )}
+                        </Field>
+                      )
+                    }}
+                  </form.Field>
+                  <form.Field name="type">
+                    {(field) => (
+                      <Field>
+                        <FieldLabel>نوع سفارش</FieldLabel>
+                        <RadioGroup
+                          value={field.state.value}
+                          onValueChange={field.handleChange}
+                        >
+                          <FieldLabel
+                            htmlFor="out"
+                            className="has-data-checked:border-red-200"
+                          >
+                            <Field
+                              orientation="horizontal"
+                              className=" rounded-md has-data-checked:bg-red-200  hoevr:bg-red-300"
+                            >
+                              <FieldContent>
+                                <FieldTitle>فروش</FieldTitle>
+                              </FieldContent>
+                              <RadioGroupItem
+                                value="out"
+                                id="out"
+                                className="data-checked:bg-red-400 data-checked:border-red-400"
+                              />
+                            </Field>
+                          </FieldLabel>
+                          <FieldLabel
+                            htmlFor="in"
+                            className="col-start-2 has-data-checked:border-green-200"
+                          >
+                            <Field
+                              orientation="horizontal"
+                              className=" rounded-md has-data-checked:bg-green-200  hoevr:bg-green-300"
+                            >
+                              <FieldContent>
+                                <FieldTitle>خرید</FieldTitle>
+                              </FieldContent>
+                              <RadioGroupItem
+                                value="in"
+                                id="in"
+                                className="data-checked:bg-green-400 data-checked:border-green-400"
+                              />
+                            </Field>
+                          </FieldLabel>
+                        </RadioGroup>
+                      </Field>
+                    )}
+                  </form.Field>
+                  <form.Field name="orderedAt">
+                    {(field) => {
+                      return (
+                        <Field className="isolate col-span-2 items-center">
+                          <FieldLabel>زمان سفارش</FieldLabel>
+                          <Calendar
+                            calendar={persian}
+                            locale={persian_fa}
+                            value={field.state.value}
+                            onChange={(e) => {
+                              field.handleChange(e?.format('YYYY-MM-DD') || '')
+                            }}
+                          />
+                        </Field>
+                      )
+                    }}
+                  </form.Field>
+                </FieldGroup>
+              </form>
+            </CardContent>
+            <CardFooter className="justify-end">
+              <form.Subscribe selector={(s) => s.isFormValid}>
+                {(isValid) => (
+                  <Button
+                    variant="default"
+                    form="add-to-inventory-form"
+                    className="px-8"
+                    type="submit"
+                    disabled={!isValid}
+                  >
+                    ثبت انبار
+                  </Button>
+                )}
+              </form.Subscribe>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        <TabsContent value="two">
+          <Card className="mb-8">
+            <CardHeader>موجودی کارت ها</CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  {table.getHeaderGroups().map((gh) => (
+                    <TableRow key={gh.id}>
+                      {gh.headers.map((h) => (
+                        <TableHead key={h.id}>
+                          {h.isPlaceholder ? null : (
+                            <div
+                              className="flex gap-1 items-center cursor-pointer"
+                              onClick={(e) => {
+                                if (h.column.getCanSort()) {
+                                  h.column.getToggleSortingHandler()?.(e)
+                                }
+                              }}
+                            >
+                              <table.FlexRender header={h} />
+                              <SortIcon sort={h.column.getIsSorted()} />
+                            </div>
+                          )}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows.map((row) => (
+                    <TableRow key={row.id}>
+                      {row.getAllCells().map((c) => {
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+                        const sum = c.row.getValue('sum') as number
+
+                        return (
+                          <TableCell
+                            key={c.id}
+                            className={cn({
+                              'bg-red-300/30': sum <= 100,
+                              'bg-orange-300/30': sum > 100 && sum <= 250,
+                            })}
+                          >
+                            <table.FlexRender cell={c} />
+                          </TableCell>
+                        )
+                      })}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

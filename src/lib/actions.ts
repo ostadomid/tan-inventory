@@ -3,6 +3,7 @@ import { createServerFn } from '@tanstack/react-start'
 import * as z from 'zod'
 import { pocketbaseProvider } from './middlewares'
 import { redirect } from '@tanstack/react-router'
+import { addOrderValidator } from './validators'
 
 export const get_session = createServerFn()
   .middleware([pocketbaseProvider])
@@ -53,4 +54,38 @@ export const get_card_ids = createServerFn()
     const cardIds = [...new Set(result.map((r) => r.card_id))]
     console.log(cardIds)
     return cardIds
+  })
+
+export const add_new_order = createServerFn({ method: 'POST' })
+  .middleware([pocketbaseProvider])
+  .validator(addOrderValidator)
+  .handler(async ({ data, context: { pb } }) => {
+    try {
+      const { id } = await pb.collection('cards').create({
+        card_id: data.cardId,
+        count: data.type == 'in' ? data.count : -data.count,
+        ordered_at: data.orderedAt,
+      })
+      return { ok: true, id }
+    } catch (err) {
+      return { ok: false, msg: (err as Error).message }
+    }
+  })
+
+export interface StockSummary {
+  card_id: string
+  sum: number
+}
+export const get_stock = createServerFn()
+  .middleware([pocketbaseProvider])
+  .handler(async ({ context: { pb } }) => {
+    console.log('Hello')
+    try {
+      const rows = await pb.collection('stock').getFullList<StockSummary>()
+      console.log(rows)
+      return rows
+    } catch (err) {
+      console.log(err)
+      return []
+    }
   })
