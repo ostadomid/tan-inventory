@@ -97,6 +97,7 @@ function RouteComponent() {
     features,
     columns,
     data: stockSummary || [],
+    initialState: { pagination: { pageIndex: 0, pageSize: 100 } },
   })
   const form = useForm({
     defaultValues: {
@@ -118,7 +119,9 @@ function RouteComponent() {
         },
       })
       if (result.ok) {
+        const lastValueForType = form.getFieldValue('type')
         form.reset()
+        form.setFieldValue('type', lastValueForType)
         toast.add({
           title: `سفارش جدید ثبت شد`,
           type: 'success',
