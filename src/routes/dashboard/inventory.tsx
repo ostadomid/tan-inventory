@@ -3,6 +3,7 @@ import { Calendar } from 'react-multi-date-picker'
 import persian from 'react-date-object/calendars/persian'
 import persian_fa from 'react-date-object/locales/persian_fa'
 import { format } from 'date-fns-jalali'
+import { usePagination } from '@mantine/hooks'
 import {
   useTable,
   tableFeatures,
@@ -50,6 +51,13 @@ import {
 } from '#/components/ui/table'
 import { SortIcon } from '#/components/sort-icon'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+} from '#/components/ui/pagination'
 
 export const Route = createFileRoute('/dashboard/inventory')({
   async loader({ context }) {
@@ -97,7 +105,11 @@ function RouteComponent() {
     features,
     columns,
     data: stockSummary || [],
-    initialState: { pagination: { pageIndex: 0, pageSize: 100 } },
+    initialState: { pagination: { pageIndex: 0, pageSize: 10 } },
+  })
+  const paginate = usePagination({
+    total: table.getPageCount(),
+    initialPage: 1,
   })
   const form = useForm({
     defaultValues: {
@@ -306,7 +318,7 @@ function RouteComponent() {
         <TabsContent value="two">
           <Card className="mb-8">
             <CardHeader>موجودی کارت ها</CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <Table>
                 <TableHeader>
                   {table.getHeaderGroups().map((gh) => (
@@ -319,6 +331,7 @@ function RouteComponent() {
                               onClick={(e) => {
                                 if (h.column.getCanSort()) {
                                   h.column.getToggleSortingHandler()?.(e)
+                                  paginate.setPage(1)
                                 }
                               }}
                             >
@@ -354,6 +367,29 @@ function RouteComponent() {
                   ))}
                 </TableBody>
               </Table>
+              <Pagination>
+                <PaginationContent>
+                  {paginate.range.map((e) =>
+                    e === 'dots' ? (
+                      <PaginationItem key="pagination-elips">
+                        <PaginationEllipsis />{' '}
+                      </PaginationItem>
+                    ) : (
+                      <PaginationItem
+                        key={e}
+                        onClick={(_) => {
+                          paginate.setPage(e)
+                          table.setPageIndex(e - 1)
+                        }}
+                      >
+                        <PaginationLink isActive={paginate.active == e}>
+                          {e}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ),
+                  )}
+                </PaginationContent>
+              </Pagination>
             </CardContent>
           </Card>
         </TabsContent>
