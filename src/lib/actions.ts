@@ -29,11 +29,15 @@ export const login = createServerFn({ method: 'POST' })
     }),
   )
   .handler(async ({ data: { email, password } }) => {
+    console.log('Check-A')
     const { setResponseHeader } = await import('@tanstack/react-start/server')
     const pb = new PocketBase('http://127.0.0.1:8090')
+
     try {
       await pb.collection('users').authWithPassword(email, password)
+      console.log('Check-B')
       const cookie = pb.authStore.exportToCookie({
+        secure: false,
         httpOnly: true,
         sameSite: 'lax',
       })
@@ -44,6 +48,20 @@ export const login = createServerFn({ method: 'POST' })
       return { ok: false }
     }
   })
+
+export const logout = createServerFn({ method: 'POST' }).handler(async () => {
+  const { setResponseHeader } = await import('@tanstack/react-start/server')
+  const pb = new PocketBase('http://localhost:8090')
+  pb.authStore.clear()
+  const cookie = pb.authStore.exportToCookie({
+    httpOnly: true,
+    secure: false,
+    sameSite: 'lax',
+    expires: new Date(1970, 12),
+  })
+  setResponseHeader('Set-Cookie', cookie)
+  return {ok:true, msg:"Bye"};
+})
 
 export const get_card_ids = createServerFn()
   .middleware([pocketbaseProvider])

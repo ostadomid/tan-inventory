@@ -15,7 +15,7 @@ export const pocketbaseProvider = createMiddleware().server(
         pb.authStore.clear()
       }
     }
-    cookie = pb.authStore.exportToCookie({ httpOnly: true, sameSite: 'lax' })
+    cookie = pb.authStore.exportToCookie({ secure:false, httpOnly: true, sameSite: 'lax' })
     setResponseHeader('Set-Cookie', cookie)
     return next({
       context: {

@@ -8,8 +8,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '#/components/ui/dropdown-menu'
-import { get_session } from '#/lib/actions'
-import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
+import { get_session, logout } from '#/lib/actions'
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  useNavigate,
+} from '@tanstack/react-router'
 import { ClipboardList, ScrollText, UserRound } from 'lucide-react'
 
 export const Route = createFileRoute('/dashboard')({
@@ -23,6 +28,7 @@ export const Route = createFileRoute('/dashboard')({
 
 function RouteComponent() {
   const { user } = Route.useRouteContext()
+  const navigate = useNavigate()
   return (
     <div className="max-w-lg mx-auto flex flex-col gap-2">
       <div className="flex gap-2 items-center bg-green-400/20 rounded-full p-2 mt-4">
@@ -58,7 +64,14 @@ function RouteComponent() {
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem>Logout</DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={async (_e) => {
+                    await logout()
+                    navigate({ to: '/', reloadDocument: true })
+                  }}
+                >
+                  Logout
+                </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
