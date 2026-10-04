@@ -1,4 +1,12 @@
+import { SortIcon } from '#/components/sort-icon'
 import { Card, CardContent, CardHeader } from '#/components/ui/card'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+} from '#/components/ui/pagination'
 import {
   Table,
   TableBody,
@@ -9,6 +17,8 @@ import {
 } from '#/components/ui/table'
 import type { Order } from '#/lib/actions'
 import { get_orders } from '#/lib/actions'
+import { cn, toJalaliStr } from '#/lib/utils'
+import { usePagination } from '@mantine/hooks'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import {
@@ -50,6 +60,10 @@ const columns: Array<ColumnDef<typeof features, Order>> = [
   {
     accessorKey: 'count',
     header: () => <span>تعداد سفارش</span>,
+    cell(props) {
+      const value = props.getValue() as number
+      return Math.abs(value)
+    },
     filterFn: 'numeral',
   },
   {
@@ -60,24 +74,34 @@ const columns: Array<ColumnDef<typeof features, Order>> = [
 ]
 function RouteComponent() {
   const { data: orders } = useQuery<Order[]>({
-    queryKey: ['orders'],
-    queryFn: get_orders,
+    queryKey: ['logs'],
+    queryFn: () =>
+      get_orders().then((items) =>
+        items.map((o) => ({
+          ...o,
+          ordered_at: toJalaliStr(o.ordered_at),
+        })),
+      ),
   })
   const table = useTable({
     data: orders || [],
     features,
     columns,
     initialState: {
-      pagination: { pageSize: 10, pageIndex: 0 },
+      pagination: { pageSize: 15, pageIndex: 0 },
       columnFilters: [{ id: 'card_id', value: '' }],
     },
+  })
+  const paginate = usePagination({
+    total: table.getPageCount(),
+    initialPage: 1,
   })
 
   return (
     <div>
       <Card>
         <CardHeader>لیست سفارشات</CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((gh) => (
@@ -86,13 +110,16 @@ function RouteComponent() {
                     <TableHead key={h.id}>
                       {h.isPlaceholder ? null : (
                         <div
+                          className="flex gap-1 items-center cursor-pointer justify-center"
                           onClick={(e) => {
                             if (h.column.getCanSort()) {
                               h.column.getToggleSortingHandler()?.(e)
+                              paginate.setPage(1)
                             }
                           }}
                         >
                           <table.FlexRender header={h} />
+                          <SortIcon sort={h.column.getIsSorted()} />
                         </div>
                       )}
                     </TableHead>
@@ -103,15 +130,49 @@ function RouteComponent() {
             <TableBody>
               {table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
-                  {row.getAllCells().map((c) => (
-                    <TableCell key={c.id}>
-                      <table.FlexRender cell={c} />
-                    </TableCell>
-                  ))}
+                  {row.getAllCells().map((c) => {
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+                    const count = c.row.getValue('count') as number
+                    return (
+                      <TableCell
+                        key={c.id}
+                        style={{ direction: 'ltr' }}
+                        className={cn('text-center', {
+                          'bg-rose-100/85': count < 0,
+                          'bg-green-100/85': count > 0,
+                        })}
+                      >
+                        <table.FlexRender cell={c} />
+                      </TableCell>
+                    )
+                  })}
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+          <Pagination className={cn({ hidden: !orders || orders.length == 0 })}>
+            <PaginationContent>
+              {paginate.range.map((e) =>
+                e === 'dots' ? (
+                  <PaginationItem key="pagination-elips">
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem
+                    key={e}
+                    onClick={(_) => {
+                      paginate.setPage(e)
+                      table.setPageIndex(e - 1)
+                    }}
+                  >
+                    <PaginationLink isActive={paginate.active == e}>
+                      {e}
+                    </PaginationLink>
+                  </PaginationItem>
+                ),
+              )}
+            </PaginationContent>
+          </Pagination>
         </CardContent>
       </Card>
     </div>

@@ -60,7 +60,7 @@ export const logout = createServerFn({ method: 'POST' }).handler(async () => {
     expires: new Date(1970, 12),
   })
   setResponseHeader('Set-Cookie', cookie)
-  return {ok:true, msg:"Bye"};
+  return { ok: true, msg: 'Bye' }
 })
 
 export const get_card_ids = createServerFn()
@@ -108,13 +108,15 @@ export const get_stock = createServerFn()
     }
   })
 
-  export interface Order{
-    card_id:string,
-    count: string,
-    ordered_at:string,
-  }
-  export const get_orders = createServerFn().middleware([pocketbaseProvider]).handler(async ({context:{pb}})=>{
-    const orders = await pb.collection("cards").getFullList<Order>();
+export interface Order {
+  card_id: string
+  count: number
+  ordered_at: string
+}
+export const get_orders = createServerFn()
+  .middleware([pocketbaseProvider])
+  .handler(async ({ context: { pb } }) => {
+    const orders = await pb.collection('cards').getFullList<Order>()
     // console.log({orders})
-    return orders;
+    return orders
   })
