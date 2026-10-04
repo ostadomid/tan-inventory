@@ -29,13 +29,13 @@ export const login = createServerFn({ method: 'POST' })
     }),
   )
   .handler(async ({ data: { email, password } }) => {
-    console.log('Check-A')
+    // console.log('Check-A')
     const { setResponseHeader } = await import('@tanstack/react-start/server')
     const pb = new PocketBase('http://127.0.0.1:8090')
 
     try {
       await pb.collection('users').authWithPassword(email, password)
-      console.log('Check-B')
+      // console.log('Check-B')
       const cookie = pb.authStore.exportToCookie({
         secure: false,
         httpOnly: true,
@@ -70,7 +70,7 @@ export const get_card_ids = createServerFn()
       .collection('cards')
       .getFullList({ sort: 'card_id', fields: 'card_id' })
     const cardIds = [...new Set(result.map((r) => r.card_id))]
-    console.log(cardIds)
+    // console.log(cardIds)
     return cardIds
   })
 
@@ -97,10 +97,10 @@ export interface StockSummary {
 export const get_stock = createServerFn()
   .middleware([pocketbaseProvider])
   .handler(async ({ context: { pb } }) => {
-    console.log('Hello')
+    // console.log('Hello')
     try {
       const rows = await pb.collection('stock').getFullList<StockSummary>()
-      console.log(rows)
+      // console.log(rows)
       return rows
     } catch (err) {
       console.log(err)

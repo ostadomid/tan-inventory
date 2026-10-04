@@ -66,7 +66,8 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '#/components/ui/input-group'
-import { Search } from 'lucide-react'
+import { Search, XCircle } from 'lucide-react'
+import { useRef } from 'react'
 
 export const Route = createFileRoute('/dashboard/inventory')({
   async loader({ context }) {
@@ -79,6 +80,7 @@ export const Route = createFileRoute('/dashboard/inventory')({
 })
 
 function RouteComponent() {
+  const searchInputRef = useRef<HTMLInputElement | null>(null)
   const { data: cardIds } = useQuery<string[]>({
     queryKey: ['cardIds'],
     queryFn: get_card_ids,
@@ -171,7 +173,7 @@ function RouteComponent() {
     table.getColumn('card_id')?.setFilterValue(value)
     table.resetSorting()
     paginate.setPage(1)
-  }, 200)
+  }, 100)
 
   // useEffect(() => {
   //   if (search) {
@@ -355,10 +357,23 @@ function RouteComponent() {
               <div className="flex gap-2">
                 <InputGroup>
                   <InputGroupInput
+                    ref={searchInputRef}
                     onChange={(e) => setCardIdColumnFilter(e.target.value)}
                   />
                   <InputGroupAddon>
                     <Search size={12} />
+                  </InputGroupAddon>
+                  <InputGroupAddon
+                    className="cursor-pointer"
+                    align={'inline-end'}
+                    onClick={(_e) => {
+                      if (searchInputRef.current) {
+                        searchInputRef.current.value = ''
+                        setCardIdColumnFilter('')
+                      }
+                    }}
+                  >
+                    <XCircle size={12} />
                   </InputGroupAddon>
                 </InputGroup>
               </div>
@@ -398,8 +413,8 @@ function RouteComponent() {
                           <TableCell
                             key={c.id}
                             className={cn({
-                              'bg-red-300/30': sum <= 100,
-                              'bg-orange-300/30': sum > 100 && sum <= 250,
+                              'bg-rose-100/85': sum <= 100,
+                              'bg-amber-100/85': sum > 100 && sum <= 250,
                             })}
                           >
                             <table.FlexRender cell={c} />
