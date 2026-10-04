@@ -14,3 +14,8 @@ export const convert_to_gregorian_sting = (jalali: string) => {
     .convert(gregorian, gregorian_en)
     .format('YYYY-MM-DD')
 }
+
+export function splitAlphaNumericRegex(input: string): string {
+  // \s* matches zero or more whitespace characters between the groups
+  return input.trim().replace(/^([a-zA-Z]+)\s*(\d+)$/, '$1-$2')
+}

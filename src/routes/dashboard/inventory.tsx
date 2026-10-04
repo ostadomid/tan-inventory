@@ -3,7 +3,7 @@ import { Calendar } from 'react-multi-date-picker'
 import persian from 'react-date-object/calendars/persian'
 import persian_fa from 'react-date-object/locales/persian_fa'
 import { format } from 'date-fns-jalali'
-import { usePagination } from '@mantine/hooks'
+import { useDebouncedCallback, usePagination } from '@mantine/hooks'
 import {
   useTable,
   tableFeatures,
@@ -11,6 +11,9 @@ import {
   createSortedRowModel,
   rowSortingFeature,
   rowPaginationFeature,
+  columnFilteringFeature,
+  createFilteredRowModel,
+  filterFn_includesString,
 } from '@tanstack/react-table'
 import type { ColumnDef } from '@tanstack/react-table'
 
@@ -58,6 +61,12 @@ import {
   PaginationItem,
   PaginationLink,
 } from '#/components/ui/pagination'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '#/components/ui/input-group'
+import { Search } from 'lucide-react'
 
 export const Route = createFileRoute('/dashboard/inventory')({
   async loader({ context }) {
@@ -83,13 +92,19 @@ function RouteComponent() {
   const features = tableFeatures({
     rowSortingFeature,
     rowPaginationFeature,
+    columnFilteringFeature,
     paginatedRowModel: createPaginatedRowModel(),
     sortedRowModel: createSortedRowModel(),
+    filteredRowModel: createFilteredRowModel(),
+    filterFns: {
+      includeString: filterFn_includesString,
+    },
   })
   const columns: Array<ColumnDef<typeof features, StockSummary>> = [
     {
       accessorKey: 'card_id',
       header: () => <div className="text-start">کارت</div>,
+      filterFn: 'includeString',
     },
     {
       accessorKey: 'sum',
@@ -105,8 +120,11 @@ function RouteComponent() {
     features,
     columns,
     data: stockSummary || [],
-    initialState: { pagination: { pageIndex: 0, pageSize: 10 } },
+    initialState: {
+      pagination: { pageIndex: 0, pageSize: 10 },
+    },
   })
+
   const paginate = usePagination({
     total: table.getPageCount(),
     initialPage: 1,
@@ -148,6 +166,21 @@ function RouteComponent() {
       }
     },
   })
+
+  const setCardIdColumnFilter = useDebouncedCallback((value: string) => {
+    table.getColumn('card_id')?.setFilterValue(value)
+    table.resetSorting()
+    paginate.setPage(1)
+  }, 200)
+
+  // useEffect(() => {
+  //   if (search) {
+  //     setCardIdColumnFilter(search)
+  //   } else {
+  //     table.resetColumnFilters()
+  //   }
+  //   return () => setCardIdColumnFilter.cancel()
+  // }, [search])
 
   return (
     <div className="space-y-6">
@@ -319,6 +352,16 @@ function RouteComponent() {
           <Card className="mb-8">
             <CardHeader>موجودی کارت ها</CardHeader>
             <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <InputGroup>
+                  <InputGroupInput
+                    onChange={(e) => setCardIdColumnFilter(e.target.value)}
+                  />
+                  <InputGroupAddon>
+                    <Search size={12} />
+                  </InputGroupAddon>
+                </InputGroup>
+              </div>
               <Table>
                 <TableHeader>
                   {table.getHeaderGroups().map((gh) => (

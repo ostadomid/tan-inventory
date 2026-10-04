@@ -19,7 +19,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '#/components/ui/popover.tsx'
-import { cn } from '#/lib/utils.ts'
+import { cn, splitAlphaNumericRegex } from '#/lib/utils.ts'
 
 type Props = {
   initialItems: string[]
@@ -70,7 +70,7 @@ const ComboboxCreatable = ({
   const showCreate = trimmed.length > 0 && !exactMatch
 
   const handleCreate = () => {
-    const newItem = trimmed.toUpperCase().replace(/\s+/g, '-')
+    const newItem = splitAlphaNumericRegex(trimmed).toUpperCase()
     setItems((prev) => [...prev, newItem])
     onValueChange(newItem)
     setQuery('')
