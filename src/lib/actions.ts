@@ -107,3 +107,14 @@ export const get_stock = createServerFn()
       return []
     }
   })
+
+  export interface Order{
+    card_id:string,
+    count: string,
+    ordered_at:string,
+  }
+  export const get_orders = createServerFn().middleware([pocketbaseProvider]).handler(async ({context:{pb}})=>{
+    const orders = await pb.collection("cards").getFullList<Order>();
+    // console.log({orders})
+    return orders;
+  })
