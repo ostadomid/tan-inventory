@@ -15,7 +15,7 @@
   font-weight: 100;
   font-style: normal;
   font-display: swap;
-}
+  }
 
 @font-face {
   font-family: Vazirmatn;
@@ -23,7 +23,7 @@
   font-weight: 200;
   font-style: normal;
   font-display: swap;
-}
+  }
 
 @font-face {
   font-family: Vazirmatn;
@@ -31,7 +31,7 @@
   font-weight: 300;
   font-style: normal;
   font-display: swap;
-}
+  }
 
 @font-face {
   font-family: Vazirmatn;
@@ -39,7 +39,7 @@
   font-weight: 400;
   font-style: normal;
   font-display: swap;
-}
+  }
 
 @font-face {
   font-family: Vazirmatn;
@@ -47,7 +47,7 @@
   font-weight: 500;
   font-style: normal;
   font-display: swap;
-}
+  }
 
 @font-face {
   font-family: Vazirmatn;
@@ -55,7 +55,7 @@
   font-weight: 600;
   font-style: normal;
   font-display: swap;
-}
+  }
 
 @font-face {
   font-family: Vazirmatn;
@@ -63,7 +63,7 @@
   font-weight: 700;
   font-style: normal;
   font-display: swap;
-}
+  }
 
 @font-face {
   font-family: Vazirmatn;
@@ -71,7 +71,7 @@
   font-weight: 800;
   font-style: normal;
   font-display: swap;
-}
+  }
 
 @font-face {
   font-family: Vazirmatn;
@@ -79,7 +79,7 @@
   font-weight: 900;
   font-style: normal;
   font-display: swap;
-}
+  }
 
 @custom-variant dark (&:is(.dark *));
 
@@ -426,6 +426,9 @@ a {
     background-color: var(--background);
     color: var(--foreground);
     @apply min-h-full bg-background text-foreground;    
+  }
+  body * {
+    font-feature-settings: "ss01" , "tnum";
   }
   html {
     @apply min-h-full font-sans;
