@@ -70,6 +70,22 @@ const columns: Array<ColumnDef<typeof features, Order>> = [
     accessorKey: 'ordered_at',
     header: () => <span>زمان سفارش</span>,
     filterFn: 'includeString',
+    cell(props) {
+      const value = props.getValue() as string
+      const [year, month, day, day_name] = value.split('-')
+      return (
+        <div className="flex flex-col">
+          <div dir="rtl" className="flex justify-center items-center gap-0.5">
+            <span>{day}</span>
+            <span className="text-gray-400">&#47;</span>
+            <span>{month}</span>
+            <span className="text-gray-400">&#47;</span>
+            <span>{year}</span>
+            <span className="ps-2 text-xs">{day_name}</span>
+          </div>
+        </div>
+      )
+    },
   },
 ]
 function RouteComponent() {
@@ -79,7 +95,7 @@ function RouteComponent() {
       get_orders().then((items) =>
         items.map((o) => ({
           ...o,
-          ordered_at: toJalaliStr(o.ordered_at),
+          ordered_at: toJalaliStr(o.ordered_at, 'yyyy-MMMM-dd-EEEE'),
         })),
       ),
   })

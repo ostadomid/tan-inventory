@@ -24,7 +24,8 @@ export function splitAlphaNumericRegex(input: string): string {
 export const toJalaliStr = (iso: string, pattern = 'yyyy-MM-dd') => {
   if (!iso) return ''
   try {
-    return format(toDate(parseISO(iso)), pattern)
+    const jalaliDate = toDate(parseISO(iso));
+    return format(jalaliDate, pattern)
   } catch {
     return ''
   }

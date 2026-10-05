@@ -116,7 +116,7 @@ export interface Order {
 export const get_orders = createServerFn()
   .middleware([pocketbaseProvider])
   .handler(async ({ context: { pb } }) => {
-    const orders = await pb.collection('cards').getFullList<Order>()
+    const orders = await pb.collection('cards').getFullList<Order>({sort:"-ordered_at"})
     // console.log({orders})
     return orders
   })
