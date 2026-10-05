@@ -79,45 +79,49 @@ export const Route = createFileRoute('/dashboard/inventory')({
   component: RouteComponent,
 })
 
+const features = tableFeatures({
+  rowSortingFeature,
+  rowPaginationFeature,
+  columnFilteringFeature,
+  paginatedRowModel: createPaginatedRowModel(),
+  sortedRowModel: createSortedRowModel(),
+  filteredRowModel: createFilteredRowModel(),
+  filterFns: {
+    includeString: filterFn_includesString,
+  },
+})
+const columns: Array<ColumnDef<typeof features, StockSummary>> = [
+  {
+    accessorKey: 'card_id',
+    header: () => <div className="text-start">کارت</div>,
+    filterFn: 'includeString',
+  },
+  {
+    accessorKey: 'sum',
+    header: () => <div className="text-start">موجودی</div>,
+    cell(props) {
+      const count = props.getValue() as number
+
+      return <span>{count}</span>
+    },
+  },
+]
+
 function RouteComponent() {
   const searchInputRef = useRef<HTMLInputElement | null>(null)
-  const { data: cardIds } = useQuery<string[]>({
+  const { data: cardIds, isFetching: fetchingCards } = useQuery<string[]>({
     queryKey: ['cardIds'],
     queryFn: get_card_ids,
   })
-  const { data: stockSummary, refetch: refetchSummary } = useQuery<
-    StockSummary[]
-  >({
+  const {
+    data: stockSummary,
+    refetch: refetchSummary,
+    isFetching: fetchingStockSummary,
+  } = useQuery<StockSummary[]>({
     queryKey: ['summary'],
     queryFn: get_stock,
   })
-  const features = tableFeatures({
-    rowSortingFeature,
-    rowPaginationFeature,
-    columnFilteringFeature,
-    paginatedRowModel: createPaginatedRowModel(),
-    sortedRowModel: createSortedRowModel(),
-    filteredRowModel: createFilteredRowModel(),
-    filterFns: {
-      includeString: filterFn_includesString,
-    },
-  })
-  const columns: Array<ColumnDef<typeof features, StockSummary>> = [
-    {
-      accessorKey: 'card_id',
-      header: () => <div className="text-start">کارت</div>,
-      filterFn: 'includeString',
-    },
-    {
-      accessorKey: 'sum',
-      header: () => <div className="text-start">موجودی</div>,
-      cell(props) {
-        const count = props.getValue() as number
 
-        return <span>{count}</span>
-      },
-    },
-  ]
   const table = useTable({
     features,
     columns,
@@ -186,7 +190,10 @@ function RouteComponent() {
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="one">
+      <Tabs
+        defaultValue="one"
+        className={cn({ 'opacity-25': fetchingCards || fetchingStockSummary })}
+      >
         <TabsList className="bg-gray-300/45">
           <TabsTrigger value="one">سفارش جدید</TabsTrigger>
           <TabsTrigger value="two">موجودی انبار</TabsTrigger>
