@@ -46,9 +46,9 @@ export function LoginForm({
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
+          <CardTitle>ورود کاربران</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            جهت ورود مشخصات ایمیل خود را وارد نمایید
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -62,8 +62,9 @@ export function LoginForm({
               <form.Field name="email">
                 {(field) => (
                   <Field>
-                    <FieldLabel htmlFor="email">Email</FieldLabel>
+                    <FieldLabel htmlFor="email">ایمیل</FieldLabel>
                     <Input
+                      dir="ltr"
                       id={field.name}
                       name={field.name}
                       type="email"
@@ -84,7 +85,7 @@ export function LoginForm({
                 {(field) => (
                   <Field>
                     <div className="flex items-center">
-                      <FieldLabel htmlFor="password">Password</FieldLabel>
+                      <FieldLabel htmlFor="password">رمز عبور</FieldLabel>
                       {/* <a
                     href="#"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
@@ -93,6 +94,7 @@ export function LoginForm({
                   </a> */}
                     </div>
                     <Input
+                      dir="ltr"
                       id={field.name}
                       name={field.name}
                       type="password"
@@ -110,7 +112,7 @@ export function LoginForm({
               </form.Field>
 
               <Field>
-                <Button type="submit">Login</Button>
+                <Button type="submit">ورود</Button>
                 {/* <Button variant="outline" type="button">
                   Login with Google
                 </Button>

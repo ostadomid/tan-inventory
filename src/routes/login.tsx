@@ -13,8 +13,8 @@ export const Route = createFileRoute('/login')({
 
 function RouteComponent() {
   return (
-    <div className="max-w-lg mx-auto p-4">
-      <LoginForm />
+    <div className="w-full h-screen grid place-items-center p-4">
+      <LoginForm className="w-full sm:max-w-sm" />
     </div>
   )
 }
