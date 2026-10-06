@@ -3,7 +3,7 @@ import { Calendar } from 'react-multi-date-picker'
 import persian from 'react-date-object/calendars/persian'
 import persian_fa from 'react-date-object/locales/persian_fa'
 import { format } from 'date-fns-jalali'
-import { useDebouncedCallback, usePagination } from '@mantine/hooks'
+import { useDebouncedCallback, usePagination, useMounted } from '@mantine/hooks'
 import {
   useTable,
   tableFeatures,
@@ -108,6 +108,7 @@ const columns: Array<ColumnDef<typeof features, StockSummary>> = [
 ]
 
 function RouteComponent() {
+  const isMounted = useMounted()
   const searchInputRef = useRef<HTMLInputElement | null>(null)
   const { data: cardIds, isFetching: fetchingCards } = useQuery<string[]>({
     queryKey: ['cardIds'],
@@ -325,14 +326,20 @@ function RouteComponent() {
                       return (
                         <Field className="isolate col-span-2 items-center">
                           <FieldLabel>زمان سفارش</FieldLabel>
-                          <Calendar
-                            calendar={persian}
-                            locale={persian_fa}
-                            value={field.state.value}
-                            onChange={(e) => {
-                              field.handleChange(e?.format('YYYY-MM-DD') || '')
-                            }}
-                          />
+                          {isMounted ? (
+                            <Calendar
+                              calendar={persian}
+                              locale={persian_fa}
+                              value={field.state.value}
+                              onChange={(e) => {
+                                field.handleChange(
+                                  e?.format('YYYY-MM-DD') || '',
+                                )
+                              }}
+                            />
+                          ) : (
+                            <div className="h-70 w-full max-w-75 animate-pulse rounded-md bg-muted" />
+                          )}
                         </Field>
                       )
                     }}
