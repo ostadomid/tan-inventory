@@ -67,7 +67,7 @@ import {
   InputGroupInput,
 } from '#/components/ui/input-group'
 import { Search, XCircle } from 'lucide-react'
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export const Route = createFileRoute('/dashboard/inventory')({
   async loader({ context }) {
@@ -187,6 +187,11 @@ function RouteComponent() {
   //   }
   //   return () => setCardIdColumnFilter.cancel()
   // }, [search])
+  const [search, setSearch] = useState('')
+  useEffect(() => {
+    setCardIdColumnFilter(search)
+    return () => setCardIdColumnFilter.cancel()
+  }, [search])
 
   return (
     <div className="space-y-6">
@@ -364,8 +369,8 @@ function RouteComponent() {
               <div className="flex gap-2">
                 <InputGroup>
                   <InputGroupInput
-                    ref={searchInputRef}
-                    onChange={(e) => setCardIdColumnFilter(e.target.value)}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
                   />
                   <InputGroupAddon>
                     <Search size={12} />
@@ -374,10 +379,7 @@ function RouteComponent() {
                     className="cursor-pointer"
                     align={'inline-end'}
                     onClick={(_e) => {
-                      if (searchInputRef.current) {
-                        searchInputRef.current.value = ''
-                        setCardIdColumnFilter('')
-                      }
+                      setSearch('')
                     }}
                   >
                     <XCircle size={12} />
