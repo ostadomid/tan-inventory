@@ -52,14 +52,18 @@ const ComboboxCreatable = ({
     if (open) {
       const timer = setTimeout(() => {
         setMounted(true)
-        console.log({ searchInputRef })
-        searchInputRef.current?.focus({ focusVisible: true })
+        // console.log({ searchInputRef })
       }, 50)
       return () => clearTimeout(timer)
     } else {
       setMounted(false)
     }
   }, [open])
+  useEffect(() => {
+    if (mounted) {
+      searchInputRef.current?.focus()
+    }
+  }, [mounted])
 
   const selected = items.find((e) => e === value)
 
