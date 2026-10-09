@@ -67,7 +67,8 @@ import {
   InputGroupInput,
 } from '#/components/ui/input-group'
 import { Search, XCircle } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { FormNavigationProvider } from '#/lib/formNavigation'
 
 export const Route = createFileRoute('/dashboard/inventory')({
   async loader({ context }) {
@@ -109,7 +110,7 @@ const columns: Array<ColumnDef<typeof features, StockSummary>> = [
 
 function RouteComponent() {
   const isMounted = useMounted()
-  const searchInputRef = useRef<HTMLInputElement | null>(null)
+  // const searchInputRef = useRef<HTMLInputElement | null>(null)
   const { data: cardIds, isFetching: fetchingCards } = useQuery<string[]>({
     queryKey: ['cardIds'],
     queryFn: get_card_ids,
@@ -180,14 +181,6 @@ function RouteComponent() {
     paginate.setPage(1)
   }, 100)
 
-  // useEffect(() => {
-  //   if (search) {
-  //     setCardIdColumnFilter(search)
-  //   } else {
-  //     table.resetColumnFilters()
-  //   }
-  //   return () => setCardIdColumnFilter.cancel()
-  // }, [search])
   const [search, setSearch] = useState('')
   useEffect(() => {
     setCardIdColumnFilter(search)
@@ -210,147 +203,154 @@ function RouteComponent() {
               <CardTitle>ثبت سفارش جدید</CardTitle>
             </CardHeader>
             <CardContent>
-              <form
-                id="add-to-inventory-form"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  form.handleSubmit()
-                }}
-              >
-                <FieldGroup className="grid sm:grid-cols-2 gap-x-2 gap-y-4">
-                  <form.Field name="cardId">
-                    {(field) => {
-                      const isInvalid =
-                        field.state.meta.isTouched && !field.state.meta.isValid
-                      return (
-                        <Field data-invalid={isInvalid}>
-                          <FieldLabel htmlFor={field.name}>کد کارت</FieldLabel>
+              <FormNavigationProvider order={['cardId', 'count']}>
+                <form
+                  id="add-to-inventory-form"
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    form.handleSubmit()
+                  }}
+                >
+                  <FieldGroup className="grid sm:grid-cols-2 gap-x-2 gap-y-4">
+                    <form.Field name="cardId">
+                      {(field) => {
+                        const isInvalid =
+                          field.state.meta.isTouched &&
+                          !field.state.meta.isValid
+                        return (
+                          <Field data-invalid={isInvalid}>
+                            <FieldLabel htmlFor={field.name}>
+                              کد کارت
+                            </FieldLabel>
 
-                          <ComboboxCreatable
-                            initialItems={cardIds || []}
-                            value={field.state.value}
-                            triggerLabel="انتخاب کنید"
-                            placeHolder="جستجو یا ایجاد کارت"
-                            onValueChange={(cardId: string | null) => {
-                              field.handleChange(cardId || '')
-                            }}
-                          />
-
-                          {isInvalid && (
-                            <FieldError errors={field.state.meta.errors} />
-                          )}
-                        </Field>
-                      )
-                    }}
-                  </form.Field>
-                  <form.Field name="count">
-                    {(field) => {
-                      const isInvalid =
-                        field.state.meta.isTouched && !field.state.meta.isValid
-                      return (
-                        <Field data-invalid={isInvalid}>
-                          <FieldLabel htmlFor={field.name}>تعداد</FieldLabel>
-                          <Input
-                            dir="ltr"
-                            className="text-center!"
-                            id={field.name}
-                            name={field.name}
-                            inputMode="numeric"
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onFocus={(e) => {
-                              e.target.select()
-                            }}
-                            onChange={(e) => {
-                              if (isNaN(parseInt(e.target.value))) {
-                                field.handleChange(0)
-                              } else {
-                                field.handleChange(parseInt(e.target.value))
-                              }
-                            }}
-                            aria-invalid={isInvalid}
-                            autoComplete="off"
-                          />
-                          {isInvalid && (
-                            <FieldError errors={field.state.meta.errors} />
-                          )}
-                        </Field>
-                      )
-                    }}
-                  </form.Field>
-                  <form.Field name="type">
-                    {(field) => (
-                      <Field>
-                        <FieldLabel>نوع سفارش</FieldLabel>
-                        <RadioGroup
-                          value={field.state.value}
-                          onValueChange={field.handleChange}
-                        >
-                          <FieldLabel
-                            htmlFor="out"
-                            className="has-data-checked:border-red-200"
-                          >
-                            <Field
-                              orientation="horizontal"
-                              className=" rounded-md has-data-checked:bg-red-200  hoevr:bg-red-300"
-                            >
-                              <FieldContent>
-                                <FieldTitle>فروش</FieldTitle>
-                              </FieldContent>
-                              <RadioGroupItem
-                                value="out"
-                                id="out"
-                                className="data-checked:bg-red-400 data-checked:border-red-400"
-                              />
-                            </Field>
-                          </FieldLabel>
-                          <FieldLabel
-                            htmlFor="in"
-                            className="col-start-2 has-data-checked:border-green-200"
-                          >
-                            <Field
-                              orientation="horizontal"
-                              className=" rounded-md has-data-checked:bg-green-200  hoevr:bg-green-300"
-                            >
-                              <FieldContent>
-                                <FieldTitle>خرید</FieldTitle>
-                              </FieldContent>
-                              <RadioGroupItem
-                                value="in"
-                                id="in"
-                                className="data-checked:bg-green-400 data-checked:border-green-400"
-                              />
-                            </Field>
-                          </FieldLabel>
-                        </RadioGroup>
-                      </Field>
-                    )}
-                  </form.Field>
-                  <form.Field name="orderedAt">
-                    {(field) => {
-                      return (
-                        <Field className="isolate col-span-2 items-center">
-                          <FieldLabel>زمان سفارش</FieldLabel>
-                          {isMounted ? (
-                            <Calendar
-                              calendar={persian}
-                              locale={persian_fa}
+                            <ComboboxCreatable
+                              name="cardId"
+                              initialItems={cardIds || []}
                               value={field.state.value}
-                              onChange={(e) => {
-                                field.handleChange(
-                                  e?.format('YYYY-MM-DD') || '',
-                                )
+                              triggerLabel="انتخاب کنید"
+                              placeHolder="جستجو یا ایجاد کارت"
+                              onValueChange={(cardId: string | null) => {
+                                field.handleChange(cardId || '')
                               }}
                             />
-                          ) : (
-                            <div className="h-70 w-full max-w-75 animate-pulse rounded-md bg-muted" />
-                          )}
+
+                            {isInvalid && (
+                              <FieldError errors={field.state.meta.errors} />
+                            )}
+                          </Field>
+                        )
+                      }}
+                    </form.Field>
+                    <form.Field name="count">
+                      {(field) => {
+                        const isInvalid =
+                          field.state.meta.isTouched &&
+                          !field.state.meta.isValid
+                        return (
+                          <Field data-invalid={isInvalid}>
+                            <FieldLabel htmlFor={field.name}>تعداد</FieldLabel>
+                            <Input
+                              dir="ltr"
+                              className="text-center!"
+                              id={field.name}
+                              name={field.name}
+                              inputMode="numeric"
+                              value={field.state.value}
+                              onBlur={field.handleBlur}
+                              onFocus={(e) => {
+                                e.target.select()
+                              }}
+                              onChange={(e) => {
+                                if (isNaN(parseInt(e.target.value))) {
+                                  field.handleChange(0)
+                                } else {
+                                  field.handleChange(parseInt(e.target.value))
+                                }
+                              }}
+                              aria-invalid={isInvalid}
+                              autoComplete="off"
+                            />
+                            {isInvalid && (
+                              <FieldError errors={field.state.meta.errors} />
+                            )}
+                          </Field>
+                        )
+                      }}
+                    </form.Field>
+                    <form.Field name="type">
+                      {(field) => (
+                        <Field>
+                          <FieldLabel>نوع سفارش</FieldLabel>
+                          <RadioGroup
+                            value={field.state.value}
+                            onValueChange={field.handleChange}
+                          >
+                            <FieldLabel
+                              htmlFor="out"
+                              className="has-data-checked:border-red-200"
+                            >
+                              <Field
+                                orientation="horizontal"
+                                className=" rounded-md has-data-checked:bg-red-200  hoevr:bg-red-300"
+                              >
+                                <FieldContent>
+                                  <FieldTitle>فروش</FieldTitle>
+                                </FieldContent>
+                                <RadioGroupItem
+                                  value="out"
+                                  id="out"
+                                  className="data-checked:bg-red-400 data-checked:border-red-400"
+                                />
+                              </Field>
+                            </FieldLabel>
+                            <FieldLabel
+                              htmlFor="in"
+                              className="col-start-2 has-data-checked:border-green-200"
+                            >
+                              <Field
+                                orientation="horizontal"
+                                className=" rounded-md has-data-checked:bg-green-200  hoevr:bg-green-300"
+                              >
+                                <FieldContent>
+                                  <FieldTitle>خرید</FieldTitle>
+                                </FieldContent>
+                                <RadioGroupItem
+                                  value="in"
+                                  id="in"
+                                  className="data-checked:bg-green-400 data-checked:border-green-400"
+                                />
+                              </Field>
+                            </FieldLabel>
+                          </RadioGroup>
                         </Field>
-                      )
-                    }}
-                  </form.Field>
-                </FieldGroup>
-              </form>
+                      )}
+                    </form.Field>
+                    <form.Field name="orderedAt">
+                      {(field) => {
+                        return (
+                          <Field className="isolate col-span-2 items-center">
+                            <FieldLabel>زمان سفارش</FieldLabel>
+                            {isMounted ? (
+                              <Calendar
+                                calendar={persian}
+                                locale={persian_fa}
+                                value={field.state.value}
+                                onChange={(e) => {
+                                  field.handleChange(
+                                    e?.format('YYYY-MM-DD') || '',
+                                  )
+                                }}
+                              />
+                            ) : (
+                              <div className="h-70 w-full max-w-75 animate-pulse rounded-md bg-muted" />
+                            )}
+                          </Field>
+                        )
+                      }}
+                    </form.Field>
+                  </FieldGroup>
+                </form>
+              </FormNavigationProvider>
             </CardContent>
             <CardFooter className="justify-end">
               <form.Subscribe selector={(s) => s.isFormValid}>
