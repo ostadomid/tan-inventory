@@ -20,8 +20,10 @@ import {
   PopoverTrigger,
 } from '#/components/ui/popover.tsx'
 import { cn, splitAlphaNumericRegex } from '#/lib/utils.ts'
+import { useNavigationForm } from '#/lib/formNavigation'
 
 type Props = {
+  name: string
   initialItems: string[]
   value: string
   triggerLabel: string
@@ -29,6 +31,7 @@ type Props = {
   onValueChange: (value: string) => void
 }
 const ComboboxCreatable = ({
+  name,
   initialItems,
   value,
   triggerLabel,
@@ -41,6 +44,8 @@ const ComboboxCreatable = ({
   const [items, setItems] = useState(initialItems)
   // const [value, setValue] = useState(value)
   const [mounted, setMounted] = useState(false)
+  const { focusNext } = useNavigationForm()
+
   const searchInputRef = useRef<HTMLInputElement>(null)
   // useEffect(() => {
   //   if (value) {
@@ -57,6 +62,7 @@ const ComboboxCreatable = ({
       return () => clearTimeout(timer)
     } else {
       setMounted(false)
+      focusNext(name)
     }
   }, [open])
   useEffect(() => {

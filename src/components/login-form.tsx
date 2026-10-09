@@ -20,6 +20,7 @@ import { Input } from '#/components/ui/input.tsx'
 import z from 'zod'
 import { login } from '#/lib/actions'
 import { useNavigate } from '@tanstack/react-router'
+import { FormNavigationProvider } from '#/lib/formNavigation'
 
 export function LoginForm({
   className,
@@ -52,76 +53,80 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              form.handleSubmit()
-            }}
-          >
-            <FieldGroup>
-              <form.Field name="email">
-                {(field) => (
-                  <Field>
-                    <FieldLabel htmlFor="email">ایمیل</FieldLabel>
-                    <Input
-                      dir="ltr"
-                      id={field.name}
-                      name={field.name}
-                      type="email"
-                      placeholder="m@example.com"
-                      required
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      onBlur={field.handleBlur}
-                    />
-                    {field.state.meta.isDirty && !field.state.meta.isValid && (
-                      <FieldError>
-                        {field.state.meta.errors[0]?.message}
-                      </FieldError>
-                    )}
-                  </Field>
-                )}
-              </form.Field>
-              <form.Field name="password">
-                {(field) => (
-                  <Field>
-                    <div className="flex items-center">
-                      <FieldLabel htmlFor="password">رمز عبور</FieldLabel>
-                      {/* <a
+          <FormNavigationProvider order={['email', 'password']}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                form.handleSubmit()
+              }}
+            >
+              <FieldGroup>
+                <form.Field name="email">
+                  {(field) => (
+                    <Field>
+                      <FieldLabel htmlFor="email">ایمیل</FieldLabel>
+                      <Input
+                        dir="ltr"
+                        id={field.name}
+                        name={field.name}
+                        type="email"
+                        placeholder="m@example.com"
+                        required
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        onBlur={field.handleBlur}
+                      />
+                      {field.state.meta.isDirty &&
+                        !field.state.meta.isValid && (
+                          <FieldError>
+                            {field.state.meta.errors[0]?.message}
+                          </FieldError>
+                        )}
+                    </Field>
+                  )}
+                </form.Field>
+                <form.Field name="password">
+                  {(field) => (
+                    <Field>
+                      <div className="flex items-center">
+                        <FieldLabel htmlFor="password">رمز عبور</FieldLabel>
+                        {/* <a
                     href="#"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                   >
                     Forgot your password?
                   </a> */}
-                    </div>
-                    <Input
-                      dir="ltr"
-                      id={field.name}
-                      name={field.name}
-                      type="password"
-                      required
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      onBlur={field.handleBlur}
-                    />
-                    {field.state.meta.isDirty && !field.state.meta.isValid && (
-                      <FieldError>
-                        {field.state.meta.errors[0]?.message}
-                      </FieldError>
-                    )}
-                  </Field>
-                )}
-              </form.Field>
+                      </div>
+                      <Input
+                        dir="ltr"
+                        id={field.name}
+                        name={field.name}
+                        type="password"
+                        required
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        onBlur={field.handleBlur}
+                      />
+                      {field.state.meta.isDirty &&
+                        !field.state.meta.isValid && (
+                          <FieldError>
+                            {field.state.meta.errors[0]?.message}
+                          </FieldError>
+                        )}
+                    </Field>
+                  )}
+                </form.Field>
 
-              <Field>
-                <Button type="submit">ورود</Button>
-                {/* <Button variant="outline" type="button">
+                <Field>
+                  <Button type="submit">ورود</Button>
+                  {/* <Button variant="outline" type="button">
                   Login with Google
                 </Button>
                 <FieldDescription className="text-center">
                   Don&apos;t have an account? <a href="#">Sign up</a>
                 </FieldDescription> */}
-              </Field>
-            </FieldGroup>
-          </form>
+                </Field>
+              </FieldGroup>
+            </form>
+          </FormNavigationProvider>
         </CardContent>
       </Card>
     </div>
