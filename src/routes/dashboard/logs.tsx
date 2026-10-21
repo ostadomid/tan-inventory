@@ -34,6 +34,7 @@ import {
   useTable,
 } from '@tanstack/react-table'
 import type { ColumnDef } from '@tanstack/react-table'
+import { useState } from 'react'
 
 export const Route = createFileRoute('/dashboard/logs')({
   component: RouteComponent,
@@ -99,6 +100,8 @@ function RouteComponent() {
         })),
       ),
   })
+  // const [search,setSearch] = useState("");
+
   const table = useTable({
     data: orders || [],
     features,

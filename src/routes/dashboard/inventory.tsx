@@ -114,6 +114,9 @@ function RouteComponent() {
   const { data: cardIds, isFetching: fetchingCards } = useQuery<string[]>({
     queryKey: ['cardIds'],
     queryFn: get_card_ids,
+    refetchInterval: 15000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   })
   const {
     data: stockSummary,
@@ -122,6 +125,9 @@ function RouteComponent() {
   } = useQuery<StockSummary[]>({
     queryKey: ['summary'],
     queryFn: get_stock,
+    refetchInterval: 15000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   })
 
   const table = useTable({
@@ -130,6 +136,7 @@ function RouteComponent() {
     data: stockSummary || [],
     initialState: {
       pagination: { pageIndex: 0, pageSize: 10 },
+      columnFilters: [],
     },
   })
 

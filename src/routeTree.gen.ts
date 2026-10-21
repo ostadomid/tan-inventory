@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as GlobalRouteImport } from './routes/global'
 import { Route as LabRouteImport } from './routes/lab'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
@@ -25,6 +26,11 @@ const IndexRoute = IndexRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GlobalRoute = GlobalRouteImport.update({
+  id: '/global',
+  path: '/global',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LabRoute = LabRouteImport.update({
@@ -56,6 +62,7 @@ const DashboardLogsRoute = DashboardLogsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/global': typeof GlobalRoute
   '/lab': typeof LabRoute
   '/login': typeof LoginRoute
   '/dashboard/inventory': typeof DashboardInventoryRoute
@@ -64,6 +71,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/global': typeof GlobalRoute
   '/lab': typeof LabRoute
   '/login': typeof LoginRoute
   '/dashboard/inventory': typeof DashboardInventoryRoute
@@ -74,6 +82,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/global': typeof GlobalRoute
   '/lab': typeof LabRoute
   '/login': typeof LoginRoute
   '/dashboard/inventory': typeof DashboardInventoryRoute
@@ -85,6 +94,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/global'
     | '/lab'
     | '/login'
     | '/dashboard/inventory'
@@ -93,6 +103,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/global'
     | '/lab'
     | '/login'
     | '/dashboard/inventory'
@@ -102,6 +113,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/global'
     | '/lab'
     | '/login'
     | '/dashboard/inventory'
@@ -112,6 +124,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRouteWithChildren
+  GlobalRoute: typeof GlobalRoute
   LabRoute: typeof LabRoute
   LoginRoute: typeof LoginRoute
 }
@@ -130,6 +143,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/global': {
+      id: '/global'
+      path: '/global'
+      fullPath: '/global'
+      preLoaderRoute: typeof GlobalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lab': {
@@ -189,6 +209,7 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRouteWithChildren,
+  GlobalRoute: GlobalRoute,
   LabRoute: LabRoute,
   LoginRoute: LoginRoute,
 }
